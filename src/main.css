@@ -39,3 +39,21 @@ html, body, #root, .container {
     flex-direction: row;
     align-self: flex-start;
 }
+
+.button {
+    font-size: 0.8em;
+
+    margin-right: 5px;
+}
+
+.button:hover {
+    cursor: pointer;
+}
+
+[active="true"] {
+    color: black;
+}
+
+[active="false"] {
+    color: #555;
+}
