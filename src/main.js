@@ -2,7 +2,8 @@ import React, {useMemo, useState, useCallback} from 'react';
 import ReactDOM from 'react-dom';
 import { createEditor, Editor, Transforms, Text } from 'slate';
 import { Slate, Editable, withReact} from 'slate-react';
-import Buttons from './components/Buttons';
+import LeafButtons from './components/LeafButtons';
+import BlockButtons from './components/BlockButtons';
 import  './main.css'
 
 const App = () => {
@@ -20,14 +21,24 @@ const App = () => {
         return <Leaf {...props} />
     }, []);
 
+    const renderElement = useCallback(props => {
+        return <Element {...props} />
+    }, []);
+
 
     return (
         <div className='editor-container'>
-            <Buttons 
+            <LeafButtons 
                 className='buttons-container' 
                 editor={editor} 
-                onMouseDown={customEditor}
-                active={customEditor}
+                customEditor={customEditor}
+                active=''
+            />
+            <BlockButtons 
+                className='buttons-container'
+                editor={editor}
+                customEditor={customEditor}
+                active=''
             />
             <Slate 
                 editor={editor} 
@@ -36,6 +47,7 @@ const App = () => {
             >
                 <Editable
                 renderLeaf={renderLeaf}
+                renderElement={renderElement}
                 onKeyDown={e => onKeyDown(e, editor)}
                 className={'editor'}
                 placeholder='Escreva algo...'
@@ -61,31 +73,18 @@ const Leaf = props => {
     )
 }
 
+const Element = ({attributes, children, element}) => {
+    switch(element.type) {
+        case 'header':
+            return <h1 {...attributes}>{children}</h1>
+        break;
+
+        default:
+            return <p {...attributes}>{children}</p>
+    }
+}
+
 const customEditor = {
-        
-    isBoldStyleActive(editor) {
-        const [match] = Editor.nodes(editor, {
-            match: n => n.bold
-        });
-
-        return !!match;
-    },
-
-    isItalicStyleActive(editor) {
-        const [match] = Editor.nodes(editor, {
-            match: n => n.italic
-        });
-
-        return !!match;
-    },
-
-    isUnderlineStyleActive(editor) {
-        const [match] = Editor.nodes(editor, {
-            match: n => n.underline
-        });
-
-        return !!match;
-    },
 
     toggleBold(editor) {
         const isActive = customEditor.isBoldStyleActive(editor);
@@ -115,6 +114,48 @@ const customEditor = {
             { underline: isActive ? null : true },
             { match: n => Text.isText(n), split: true }
         )
+    },
+
+    toggleHeader(editor) {
+        const isActive = customEditor.isHeaderBlockActive(editor);
+
+        Transforms.setNodes(
+            editor,
+            { type: isActive ? 'paragraph' : 'header' },
+            { match: n => Editor.isBlock(editor, n) } 
+        )
+    },
+
+    isBoldStyleActive(editor) {
+        const [match] = Editor.nodes(editor, {
+            match: n => n.bold
+        });
+
+        return !!match;
+    },
+
+    isItalicStyleActive(editor) {
+        const [match] = Editor.nodes(editor, {
+            match: n => n.italic
+        });
+
+        return !!match;
+    },
+
+    isUnderlineStyleActive(editor) {
+        const [match] = Editor.nodes(editor, {
+            match: n => n.underline
+        });
+
+        return !!match;
+    },
+
+    isHeaderBlockActive(editor) {
+        const [match] = Editor.nodes(editor, {
+            match: n => n.type === 'header'
+        });
+
+        return !!match;
     }
     
 }
@@ -136,6 +177,12 @@ const onKeyDown = (e, editor) => {
         case 'u':
             e.preventDefault();
             customEditor.toggleUnderline(editor);
+        break;
+         
+        case 'h':
+            e.preventDefault();
+            customEditor.toggleHeader(editor);
+        break;
     }
 }
 
