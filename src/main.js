@@ -20,111 +20,28 @@ const App = () => {
         return <Leaf {...props} />
     }, []);
 
-    const customEditor = {
-        
-        isBoldStyleActive(editor) {
-            const [match] = Editor.nodes(editor, {
-                match: n => n.bold
-            });
-    
-            return !!match;
-        },
-
-        isItalicStyleActive(editor) {
-            const [match] = Editor.nodes(editor, {
-                match: n => n.italic
-            });
-
-            return !!match;
-        },
-
-        isUnderlineStyleActive(editor) {
-            const [match] = Editor.nodes(editor, {
-                match: n => n.underline
-            });
-
-            return !!match;
-        },
-
-        toggleBold(editor) {
-            const isActive = customEditor.isBoldStyleActive(editor);
-
-            Transforms.setNodes(
-                editor,
-                { bold: isActive ? null : true },
-                { match: n => Text.isText(n), split: true }
-            )
-        },
-
-        toggleItalic(editor) {
-            const isActive = customEditor.isItalicStyleActive(editor);
-
-            Transforms.setNodes(
-                editor,
-                { italic: isActive ? null : true },
-                { match: n => Text.isText(n), split: true }
-            )
-        },
-
-        toggleUnderline(editor) {
-            const isActive = customEditor.isUnderlineStyleActive(editor);
-
-            Transforms.setNodes(
-                editor,
-                { underline: isActive ? null : true },
-                { match: n => Text.isText(n), split: true }
-            )
-        }
-        
-    }
-
-    const onKeyDown = (e, editor) => {
-        if(!e.ctrlKey) { return; }
-
-        switch(e.key) {
-            case 'b':
-                e.preventDefault();
-                customEditor.toggleBold(editor);
-            break;
-
-            case 'i':
-                e.preventDefault();
-                customEditor.toggleItalic(editor);
-            break;
-
-            case 'u':
-                e.preventDefault();
-                customEditor.toggleUnderline(editor);
-        }
-    }
-
-    const boldOnMouseDown = (e, editor) => {
-        e.preventDefault();
-        customEditor.toggleBold(editor);
-    }
 
     return (
-        <div className='root-container'>
-            <div className='editor-container'>
-                <Buttons 
-                    className='buttons-container' 
-                    editor={editor} 
-                    onMouseDown={customEditor}
-                    active={customEditor}
-                />
-                <Slate 
-                    editor={editor} 
-                    value={value} 
-                    onChange={value => setValue(value)}
-                >
-                    <Editable
-                    renderLeaf={renderLeaf}
-                    onKeyDown={e => onKeyDown(e, editor)}
-                    className={'editor'}
-                    placeholder='Escreva algo...'
-                />
-                </Slate>
-            </div>
+        <div className='editor-container'>
+            <Buttons 
+                className='buttons-container' 
+                editor={editor} 
+                onMouseDown={customEditor}
+                active={customEditor}
+            />
+            <Slate 
+                editor={editor} 
+                value={value} 
+                onChange={value => setValue(value)}
+            >
+                <Editable
+                renderLeaf={renderLeaf}
+                onKeyDown={e => onKeyDown(e, editor)}
+                className={'editor'}
+                placeholder='Escreva algo...'
+                autoFocus
+            />
+            </Slate>
         </div>
     )
 }
@@ -142,6 +59,84 @@ const Leaf = props => {
             {props.children}
         </span>
     )
+}
+
+const customEditor = {
+        
+    isBoldStyleActive(editor) {
+        const [match] = Editor.nodes(editor, {
+            match: n => n.bold
+        });
+
+        return !!match;
+    },
+
+    isItalicStyleActive(editor) {
+        const [match] = Editor.nodes(editor, {
+            match: n => n.italic
+        });
+
+        return !!match;
+    },
+
+    isUnderlineStyleActive(editor) {
+        const [match] = Editor.nodes(editor, {
+            match: n => n.underline
+        });
+
+        return !!match;
+    },
+
+    toggleBold(editor) {
+        const isActive = customEditor.isBoldStyleActive(editor);
+
+        Transforms.setNodes(
+            editor,
+            { bold: isActive ? null : true },
+            { match: n => Text.isText(n), split: true }
+        )
+    },
+
+    toggleItalic(editor) {
+        const isActive = customEditor.isItalicStyleActive(editor);
+
+        Transforms.setNodes(
+            editor,
+            { italic: isActive ? null : true },
+            { match: n => Text.isText(n), split: true }
+        )
+    },
+
+    toggleUnderline(editor) {
+        const isActive = customEditor.isUnderlineStyleActive(editor);
+
+        Transforms.setNodes(
+            editor,
+            { underline: isActive ? null : true },
+            { match: n => Text.isText(n), split: true }
+        )
+    }
+    
+}
+
+const onKeyDown = (e, editor) => {
+    if(!e.ctrlKey) { return; }
+
+    switch(e.key) {
+        case 'b':
+            e.preventDefault();
+            customEditor.toggleBold(editor);
+        break;
+
+        case 'i':
+            e.preventDefault();
+            customEditor.toggleItalic(editor);
+        break;
+
+        case 'u':
+            e.preventDefault();
+            customEditor.toggleUnderline(editor);
+    }
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));

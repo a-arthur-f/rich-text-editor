@@ -17,7 +17,7 @@ export default function(props) {
 
             <div 
                 className="button"
-                onMouseDown={() => props.onMouseDown.toggleItalic(props.editor)}
+                onMouseDown={e => { e.preventDefault(); props.onMouseDown.toggleItalic(props.editor); }}
                 active={italicStyle}
             >
                 <i className="fa fa-italic" aria-hidden="true"></i>
@@ -25,7 +25,7 @@ export default function(props) {
 
             <div 
                 className="button"
-                onMouseDown={() => props.onMouseDown.toggleUnderline(props.editor)}
+                onMouseDown={e => { e.preventDefault(); props.onMouseDown.toggleUnderline(props.editor); }}
                 active={underlineStyle}
             >
                 <i className="fa fa-underline" aria-hidden="true"></i>

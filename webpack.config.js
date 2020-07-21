@@ -1,7 +1,7 @@
 const path = require('path');     
 
 module.exports = {
-    mode: 'none',
+    mode: 'development',
 
     entry: './src/main.js',
 
@@ -30,6 +30,10 @@ module.exports = {
         ],
     },
 
-    watch: true,
+    devServer: {
+        contentBase: path.join(__dirname, 'dist'),
+        compress: true,
+        port: 9000
+    }
 
 }
