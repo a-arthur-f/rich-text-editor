@@ -1,9 +1,8 @@
 import React, {useMemo, useState, useCallback} from 'react';
 import ReactDOM from 'react-dom';
 import { createEditor, Editor, Transforms, Text } from 'slate';
-import { Slate, Editable, withReact} from 'slate-react';
-import LeafButtons from './components/LeafButtons';
-import BlockButtons from './components/BlockButtons';
+import { Slate, Editable, withReact, useEditor, useSlate} from 'slate-react';
+import Button from './components/Button';
 import  './main.css'
 
 const App = () => {
@@ -28,23 +27,26 @@ const App = () => {
 
     return (
         <div className='editor-container'>
-            <LeafButtons 
-                className='buttons-container' 
-                editor={editor} 
-                customEditor={customEditor}
-                active=''
-            />
-            <BlockButtons 
-                className='buttons-container'
-                editor={editor}
-                customEditor={customEditor}
-                active=''
-            />
             <Slate 
                 editor={editor} 
                 value={value} 
                 onChange={value => setValue(value)}
             >
+
+                <div className='buttons-container'>
+                    <StyleButton 
+                        format='bold'
+                        icon='fa fa-bold'
+                    />
+                </div>
+
+                <div className='buttons-container'>
+                    <BlockButton 
+                        format='header'
+                        icon='fa fa-header'
+                    />
+                </div>
+
                 <Editable
                 renderLeaf={renderLeaf}
                 renderElement={renderElement}
@@ -58,19 +60,15 @@ const App = () => {
     )
 }
 
-const Leaf = props => {
-    return (
-        <span 
-            {...props.attributes}
-            style={{
-                fontWeight: props.leaf.bold ? 'bold' : 'normal',
-                fontStyle: props.leaf.italic ? 'italic': 'normal',
-                textDecoration: props.leaf.underline ? 'underline' : 'none'
-            }} 
-        >
-            {props.children}
-        </span>
-    )
+const Leaf = ({attributes, children, leaf}) => {
+    if(leaf.bold)
+        children = <strong>{children}</strong>
+    if(leaf.italic)
+        children = <em>{children}</em>
+    if(leaf.underline)
+        children = <u>{children}</u>
+
+    return <span {...attributes}>{children}</span>
 }
 
 const Element = ({attributes, children, element}) => {
@@ -84,80 +82,36 @@ const Element = ({attributes, children, element}) => {
     }
 }
 
-const customEditor = {
+const BlockButton = props => {
+    const editor = useEditor();
+    return (
+        <Button
+            active={customEditor.isBlockActive(editor, props.format).toString()}
+            className='button'
+            onMouseDown={e => {
+                e.preventDefault();
+                customEditor.toggleBlock(editor, props.format)
+            }}
+        >
+            <i className={props.icon}></i>
+        </Button>
+    )
+}
 
-    toggleBold(editor) {
-        const isActive = customEditor.isBoldStyleActive(editor);
-
-        Transforms.setNodes(
-            editor,
-            { bold: isActive ? null : true },
-            { match: n => Text.isText(n), split: true }
-        )
-    },
-
-    toggleItalic(editor) {
-        const isActive = customEditor.isItalicStyleActive(editor);
-
-        Transforms.setNodes(
-            editor,
-            { italic: isActive ? null : true },
-            { match: n => Text.isText(n), split: true }
-        )
-    },
-
-    toggleUnderline(editor) {
-        const isActive = customEditor.isUnderlineStyleActive(editor);
-
-        Transforms.setNodes(
-            editor,
-            { underline: isActive ? null : true },
-            { match: n => Text.isText(n), split: true }
-        )
-    },
-
-    toggleHeader(editor) {
-        const isActive = customEditor.isHeaderBlockActive(editor);
-
-        Transforms.setNodes(
-            editor,
-            { type: isActive ? 'paragraph' : 'header' },
-            { match: n => Editor.isBlock(editor, n) } 
-        )
-    },
-
-    isBoldStyleActive(editor) {
-        const [match] = Editor.nodes(editor, {
-            match: n => n.bold
-        });
-
-        return !!match;
-    },
-
-    isItalicStyleActive(editor) {
-        const [match] = Editor.nodes(editor, {
-            match: n => n.italic
-        });
-
-        return !!match;
-    },
-
-    isUnderlineStyleActive(editor) {
-        const [match] = Editor.nodes(editor, {
-            match: n => n.underline
-        });
-
-        return !!match;
-    },
-
-    isHeaderBlockActive(editor) {
-        const [match] = Editor.nodes(editor, {
-            match: n => n.type === 'header'
-        });
-
-        return !!match;
-    }
-    
+const StyleButton = props => {
+    const editor = useSlate();
+    return (
+        <Button
+            active={customEditor.isStyleActive(editor, props.format).toString()}
+            className='button'
+            onMouseDown={e => {
+                e.preventDefault();
+                customEditor.toggleStyle(editor, props.format);
+            }}
+        >
+            <i className={props.icon}></i>
+        </Button>
+    )
 }
 
 const onKeyDown = (e, editor) => {
@@ -166,24 +120,62 @@ const onKeyDown = (e, editor) => {
     switch(e.key) {
         case 'b':
             e.preventDefault();
-            customEditor.toggleBold(editor);
+            customEditor.toggleStyle(editor, 'bold');
         break;
 
         case 'i':
             e.preventDefault();
-            customEditor.toggleItalic(editor);
+            customEditor.toggleStyle(editor, 'italic');
         break;
 
         case 'u':
             e.preventDefault();
-            customEditor.toggleUnderline(editor);
+            customEditor.toggleStyle(editor, 'underline');
         break;
          
         case 'h':
             e.preventDefault();
-            customEditor.toggleHeader(editor);
+            customEditor.toggleBlock(editor, 'header');
         break;
     }
+}
+
+const customEditor = {
+
+    toggleBlock(editor, format) {
+        const isActive = customEditor.isBlockActive(editor, format);
+
+        Transforms.setNodes(editor,
+            { type: isActive ? 'paragraph' : format },
+            { match: n => Editor.isBlock(editor, n) }
+        )
+    },
+
+    toggleStyle(editor, format) {
+        const isActive = customEditor.isStyleActive(editor, format);
+
+        if(isActive) {
+            Editor.removeMark(editor, format);
+        }
+            
+        else {
+            Editor.addMark(editor, format, true);
+        }
+    },
+
+    isBlockActive(editor, format) {
+        const [match] = Editor.nodes(editor, {
+            match: n => n.type === format
+        });
+
+        return !!match;
+    },
+    
+    isStyleActive(editor, format) {
+        const marks = Editor.marks(editor);
+        return marks ? marks[format] === true : false;
+    }
+    
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
