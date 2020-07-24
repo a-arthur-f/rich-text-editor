@@ -5,8 +5,12 @@ import './main.css';
 
 const App = () => {
     return (
-        <div className='editor-container'>
-            <EditorComponent />
+        <div className='container'>
+            <header className='cabecalho'>Rich Text Editor</header>
+
+            <div className='editor-container'>
+                <EditorComponent />
+            </div>
         </div>
     )
 }
