@@ -27,24 +27,19 @@ const App = () => {
 
     return (
         <div className='editor-container'>
-            <Slate 
-                editor={editor} 
-                value={value} 
-                onChange={value => setValue(value)}
+            <Slate editor={editor} value={value} onChange={value => setValue(value)}
+                    className='slate'
             >
 
                 <div className='buttons-container'>
-                    <StyleButton 
-                        format='bold'
-                        icon='fa fa-bold'
-                    />
-                </div>
-
-                <div className='buttons-container'>
-                    <BlockButton 
-                        format='header'
-                        icon='fa fa-header'
-                    />
+                    <StyleButton format='bold' icon='fa fa-bold' />
+                    <StyleButton format='italic' icon='fa fa-italic' />
+                    <StyleButton format='underline' icon='fa fa-underline' />
+                    <StyleButton format='strike' icon='fa fa-strikethrough' /> 
+                    <StyleButton format='code' icon='fa fa-code' />
+                    
+                    <BlockButton format='header' icon='fa fa-header' />
+                    <BlockButton format='quote' icon='fa fa-quote-right' />
                 </div>
 
                 <Editable
@@ -67,6 +62,11 @@ const Leaf = ({attributes, children, leaf}) => {
         children = <em>{children}</em>
     if(leaf.underline)
         children = <u>{children}</u>
+    if(leaf.strike)
+        children = <strike>{children}</strike>
+
+    if(leaf.code) 
+        children = <code>{children}</code>
 
     return <span {...attributes}>{children}</span>
 }
@@ -75,6 +75,10 @@ const Element = ({attributes, children, element}) => {
     switch(element.type) {
         case 'header':
             return <h1 {...attributes}>{children}</h1>
+        break;
+
+        case 'quote':
+            return <blockquote {...attributes}>{children}</blockquote>
         break;
 
         default:
